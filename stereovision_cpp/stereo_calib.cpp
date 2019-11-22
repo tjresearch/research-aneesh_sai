@@ -14,6 +14,23 @@
 
 using namespace cv;
 using namespace std;
+
+static int print_help()
+{
+    cout <<
+            " Given a list of chessboard images, the number of corners (nx, ny)\n"
+            " on the chessboards, and a flag: useCalibrated for \n"
+            "   calibrated (0) or\n"
+            "   uncalibrated \n"
+            "     (1: use stereoCalibrate(), 2: compute fundamental\n"
+            "         matrix separately) stereo. \n"
+            " Calibrate the cameras and display the\n"
+            " rectified results along with the computed disparity images.   \n" << endl;
+    cout << "Usage:\n ./stereo_calib -w=<board_width default=9> -h=<board_height default=6> -s=<square_size default=1.0> <image list XML/YML file default=stereo_calib.xml>\n" << endl;
+    return 0;
+}
+
+
 static void
 StereoCalib(const vector<string>& imagelist, Size boardSize, float squareSize, bool displayCorners = false, bool useCalibrated=true, bool showRectified=true)
 {
@@ -300,26 +317,33 @@ static bool readStringList( const string& filename, vector<string>& l )
         l.push_back((string)*it);
     return true;
 }
-int main( int argc, char** argv )
+
+int main2(int argc, char** argv)
 {
-    if( argc != 2)
+    Size boardSize;
+    string imagelistfn;
+    bool showRectified;
+    cv::CommandLineParser parser(argc, argv, "{w|9|}{h|6|}{s|1.0|}{nr||}{help||}{@input|stereo_calib.xml|}");
+    if (parser.has("help"))
+        return print_help();
+    showRectified = !parser.has("nr");
+    imagelistfn = samples::findFile(parser.get<string>("@input"));
+    boardSize.width = parser.get<int>("w");
+    boardSize.height = parser.get<int>("h");
+    float squareSize = parser.get<float>("s");
+    if (!parser.check())
     {
-     cout <<" Usage: display_image ImageToLoadAndDisplay" << endl;
-     return -1;
+        parser.printErrors();
+        return 1;
+    }
+    vector<string> imagelist;
+    bool ok = readStringList(imagelistfn, imagelist);
+    if(!ok || imagelist.empty())
+    {
+        cout << "can not open " << imagelistfn << " or the string list is empty" << endl;
+        return print_help();
     }
 
-    Mat image;
-    image = imread(argv[1], -1);   // Read the file
-
-    if(! image.data )                              // Check for invalid input
-    {
-        cout <<  "Could not open or find the image" << std::endl ;
-        return -1;
-    }
-
-    namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
-    imshow( "Display window", image );                   // Show our image inside it.
-
-    waitKey(0);                                          // Wait for a keystroke in the window
+    StereoCalib(imagelist, boardSize, squareSize, false, true, showRectified);
     return 0;
 }
