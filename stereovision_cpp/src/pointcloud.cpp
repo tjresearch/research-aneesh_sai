@@ -23,6 +23,7 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, float squareSize, b
         return;
     }
 
+
     const int maxScale = 2;
     // ARRAY AND VECTOR STORAGE:
 
@@ -64,6 +65,7 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, float squareSize, b
                     CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE);
                 if( found )
                 {
+                	cout << "image found " << i*2+k << endl;
                     if( scale > 1 )
                     {
                         Mat cornersMat(corners);
@@ -88,11 +90,15 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, float squareSize, b
             else
                 putchar('.');
             if( !found )
+            {
+            	cout << "not found in image " << i << endl;
                 break;
+            }
             cornerSubPix(img, corners, Size(11,11), Size(-1,-1),
                          TermCriteria(TermCriteria::COUNT+TermCriteria::EPS,
                                       30, 0.01));
         }
+        cout << "k: " << k << endl;
         if( k == 2 )
         {
             goodImageList.push_back(imagelist[i*2]);
@@ -286,40 +292,31 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, float squareSize, b
 }
 
 
-static bool readStringList( const string& filename, vector<string>& l )
-{
-    l.resize(0);
-    FileStorage fs(filename, FileStorage::READ);
-    if( !fs.isOpened() )
-        return false;
-    FileNode n = fs.getFirstTopLevelNode();
-    if( n.type() != FileNode::SEQ )
-        return false;
-    FileNodeIterator it = n.begin(), it_end = n.end();
-    for( ; it != it_end; ++it )
-        l.push_back((string)*it);
-    return true;
-}
 int main( int argc, char** argv )
 {
-    if( argc != 2)
-    {
-     cout <<" Usage: display_image ImageToLoadAndDisplay" << endl;
-     return -1;
-    }
-
-    Mat image;
-    image = imread(argv[1], -1);   // Read the file
-
-    if(! image.data )                              // Check for invalid input
-    {
-        cout <<  "Could not open or find the image" << std::endl ;
-        return -1;
-    }
-
-    namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
-    imshow( "Display window", image );                   // Show our image inside it.
-
-    waitKey(0);                                          // Wait for a keystroke in the window
-    return 0;
+	int w=7;
+	int h=7;
+	float squareSize=1.0;
+	bool showRectified=true;
+	bool useCalibrated=true;
+	bool showCorners=true;
+	int numImgPairs=30;
+	string folder="calib_images/";
+	vector<string> imageList;
+	for(int i=0; i<numImgPairs; i++)
+	{
+		imageList.push_back(folder+"left_"+to_string(i)+".png");
+		imageList.push_back(folder+"right_"+to_string(i)+".png");
+	}
+	for(int i=0; i<numImgPairs*2; i++)
+	{
+		cout << imageList[i] << endl;
+	}
+	Size boardSize;
+	boardSize.width=w;
+	boardSize.height=h;
+	cout << "starting calibration" << endl;
+    StereoCalib(imageList, boardSize, squareSize, showCorners, useCalibrated, showRectified);
+    cout << "ended calibration" << endl;
+	return 0;
 }
