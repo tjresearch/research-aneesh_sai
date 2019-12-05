@@ -294,29 +294,38 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, float squareSize, b
 
 int main( int argc, char** argv )
 {
-	int w=7;
-	int h=7;
-	float squareSize=1.0;
-	bool showRectified=true;
-	bool useCalibrated=true;
-	bool showCorners=true;
-	int numImgPairs=30;
-	string folder="calib_images/";
-	vector<string> imageList;
-	for(int i=0; i<numImgPairs; i++)
+	bool calib=false;
+	if(calib)
 	{
-		imageList.push_back(folder+"left_"+to_string(i)+".png");
-		imageList.push_back(folder+"right_"+to_string(i)+".png");
+		int w=7;
+		int h=7;
+		float squareSize=1.0;
+		bool showRectified=true;
+		bool useCalibrated=false;
+		bool showCorners=true;
+		int numImgPairs=30;
+		string folder="calib_images/";
+		vector<string> imageList;
+		for(int i=0; i<numImgPairs; i++)
+		{
+			imageList.push_back(folder+"left_"+to_string(i)+".png");
+			imageList.push_back(folder+"right_"+to_string(i)+".png");
+		}
+		for(int i=0; i<numImgPairs*2; i++)
+		{
+			cout << imageList[i] << endl;
+		}
+		Size boardSize;
+		boardSize.width=w;
+		boardSize.height=h;
+		cout << "starting calibration" << endl;
+		StereoCalib(imageList, boardSize, squareSize, showCorners, useCalibrated, showRectified);
+		cout << "ended calibration" << endl;
 	}
-	for(int i=0; i<numImgPairs*2; i++)
+	else
 	{
-		cout << imageList[i] << endl;
+
 	}
-	Size boardSize;
-	boardSize.width=w;
-	boardSize.height=h;
-	cout << "starting calibration" << endl;
-    StereoCalib(imageList, boardSize, squareSize, showCorners, useCalibrated, showRectified);
-    cout << "ended calibration" << endl;
+	}
 	return 0;
 }
