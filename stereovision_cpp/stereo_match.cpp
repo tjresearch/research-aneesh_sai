@@ -41,7 +41,7 @@ static void saveXYZ(const char* filename, const Mat& mat)
     fclose(fp);
 }
 
-int main(int argc, char** argv)
+int main3(int argc, char** argv)
 {
     std::string img1_filename = "";
     std::string img2_filename = "";
