@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -296,7 +297,6 @@ static void saveXYZ(const char* filename, const Mat& mat)
 {
     const double max_z = 1.0e4;
 
-    FILE* fp = fopen(filename, "wt");
     int count=0;
     for(int y = 0; y < mat.rows; y++)
     {
@@ -311,18 +311,22 @@ static void saveXYZ(const char* filename, const Mat& mat)
     ofstream outfile(filename);
     outfile << "ply\n" << "format ascii 1.0\n" << "comment VTK generated PLY File\n";
     outfile << "obj_info vtkPolyData points and polygons : vtk4.0\n" << "element vertex " << count << "\n";
-    outfile.close();
+    outfile << "property float x\n" << "property float y\n" << "property float z\n" << "element face 0\n";
+    outfile << "property list uchar int vertex_indices\n" << "end_header\n";
     for(int y = 0; y < mat.rows; y++)
         {
             for(int x = 0; x < mat.cols; x++)
             {
                 Vec3f point = mat.at<Vec3f>(y, x);
                 if(fabs(point[2] - max_z) < FLT_EPSILON || fabs(point[2]) > max_z) continue;
+                outfile << point[0]<< " ";
+                outfile << point[1] << " ";
+                outfile << point[2] << " ";
+                outfile << "\n";
 
-                fprintf(fp, "%f %f %f\n", point[0], point[1], point[2]);
             }
         }
-    fclose(fp);
+    outfile.close();
 }
 
 
